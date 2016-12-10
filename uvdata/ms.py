@@ -25,12 +25,6 @@ class MS(UVData):
     run_sanity_check: Option to sanity check the values of the required parameters after reading in the file. Default is True. 
     """
 
-    def __init__(self):
-        #add the UVParameters to the class
-
-        #standard angle tolerance: 10 mas in radians
-        #Apparently there are plans to reduce this to 1mas
-        radian_tol=10*2*np.pi*1e-3/(60.0*60.0*360.)
     
     def read_ms(self,filename,run_check=True,run_sanity_check=True,data_column='DATA'):
         #set visibility units
@@ -66,4 +60,4 @@ class MS(UVData):
         self.ant_1_array.value=tb.getcol('ANTENNA1').astype(int32)
         self.ant_2_array.value=tb.getcol('ANTENNA2').astype(int32)
         self.basline_array.value=self.antnums_to_baseline(self.ant_1_array.value,self.ant2_array.value)
-        
+        #get polarization time
