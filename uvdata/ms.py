@@ -127,5 +127,29 @@ class MS(UVData):
         run_check: Option to check for the existence and proper shapes of required parameters before writing the file. Default is True.
         run_sanity_checK: Option to sanity check the values of required parameters before writing the file. Default is True.
         """
-        if run_check:
+        main_tab_desc=tables.maketabdesc([
+            tables.makearrcoldesc('DATA',0.+0j,ndim=2),
+            tables.makearrcoldesc('TIME',0.),
+            tables.makearrcoldesc('ANTENNA1',0),
+            tables.makearrcoldesc('ANTENNA2',0),
+            tables.makearrcoldesc('FEED1',0),
+            tables.makearrcoldesc('FEED2',0),
+            tables.makearrcoldesc('DATA_DESC_ID',0),
+            tables.makearrcoldesc('PROCESSOR_ID',0),
+            tables.makearrcoldesc('FIELD_ID',0),
+            tables.makearrcoldesc('INTERVAL',0.),
+            tables.makearrcoldesc('EXPOSURE',0.),
+            tables.makearrcoldesc('TIME_CENTROID',0.),
+            tables.makearrcoldesc('SCAN_NUMBER',1),
+            tables.makearrcoldesc('ARRAY_ID',0),
+            tables.makearrcoldesc('STATE_ID',-1),
+            tables.makearrcoldesc('UVW',ndim=1),
+            ])
+
+            
+            
+        
+        
+        
+        
             
