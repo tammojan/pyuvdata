@@ -21,7 +21,7 @@ polStrDict{1:'I',2:'Q',3:'U',4:'V',
            21:'PP',22:'PQ',23:'QP',24:'QQ',
            25:'RCircular',26:'LCircular',27:'Linear',28:'Ptotal',
            29:'PFTotal',30:'PFLinear',31:'Pangle'}
-
+receptorAngleDict{'X':0.,'Y':np.pi/2}
 '''
 creates a casa table description from a dictionary of column names and data values
 
@@ -165,10 +165,13 @@ class MS(UVData):
             self.telescope_location.value=np.array(np.mean(tbAnt.getcol('POSITION'),axis=1))
         tbAnt.close()
         tbField=tables.table(filename+'.ms/FIELD')
-        if(tbField.getcol('PHASE_DIR').shape[1]>1):
+        if(tbField.getcol('PHASE_DIR').shape[1]==2):
             self.phase_type.value='drift'
         elif(tbField.getcol('PHASE_DIR').shape[1]==1):
             self.phase_type.value='phased'
+            self.phase_center_epoch=2000.#MSv2.0 appears to assume J2000. Not sure how to specifiy otherwise
+            self.phase_center_ra=tbField.getcol('PHASE_DIR')[0][0]
+            self.phase_center_dec=tbField.getcol('PHASE_DIR')[0][1]
         #else:
         #    self.phase_type.value='unknown'
         #set LST array from times and itrf
@@ -237,7 +240,7 @@ class MS(UVData):
                      'POLARIZATION_ID':np.array([0]).astype(int),
                      'SPECTRAL_WINDOW_ID':np.array([0]).astype(int)},
                      {},1)
-        #create FEED table Spoof:
+        #create FEED table:
         create_table(filename+'/FEED',
                      {'ANTENNA_ID':np.arange(self.Nants_telescope).astype(int),
                       'FEED_ID':np.zeros(self.Nants_telescope).astype(int),
@@ -247,13 +250,22 @@ class MS(UVData):
                       'NUM_RECEPTORS':np.ones(self.Nants_telescope).astype(int)*2,#Need to generalize
                       'BEAM_ID':np.zeros(self.Nants_telescope).astype(int),
                       'BEAM_OFFSET':np.zeros((self.Nants_telescope,2,2)),
-                      'POLARIZATION_TYPE':np.array([[polStrDict[polDictI[self.polarization_array.value[0]]][0],polStrDict[polDictI[self.polarization_array.value[-1]]][0]] for mm in range(self.Nants_telescope)]),#pyuvdata does not allow for different pols for differnet antennas. Assumes that the last numer in pyuvdata correlation table has second feed on antenna_1. 
-                      'POL_RESPONSE':np.array([[[1.+0j,0.+0j],[0.+0j,1.+0j]] for mm in range(self.Nants_telescope)])#spoof
-                      'POSITION':np.zeros((self.Nants_telescope,3)),
-                      
-                      '
-        
-        
+                      'POLARIZATION_TYPE':np.array([[polStrDict[polDictI[self.polarization_array.value[0]]][0],polStrDict[polDictI[self.polarization_array.value[-1]]][0]] for mm in range(self.Nants_telescope)]),#pyuvdata does not allow for different pols for differnet antennas. Assumes that the last numer in pyuvdata correlation table has second feed on antenna_1 in the -1 position. 
+                      'POL_RESPONSE':np.array([[[1.+0j,0.+0j],[0.+0j,1.+0j]] for mm in range(self.Nants_telescope)]),#spoof
+                      'POSITION':np.zeros((self.Nants_telescope,3)),#spoof
+                      'RECEPTOR_ANGLE':np.array([receptorAngleDict[polStrDict[polDictI[self.polarization_array.value[0]]][0]],receptorAngleDict[polStrDict[polDictI[self.polarization_array.value[-1]]][1]] for mm in range(self.Nants_telescope)])},#pyuvdata does not allow for different pols for different antennas. Assumes that pyuvdata correlation table has second feed on antenna_1 in the -1 position. Will not work for LR, PQ etc... (only supports X and Y right now)
+                     {},self.Nants_telescope)
+        #create FIELD table
+        if(self.phase_type.value=='phased'):
+            npoly=0
+            ddir=np.array([self.phase_center_ra,self.phase_center_dec])
+            pdir=ddir
+            rdir=ddir
+        elif(self.phase_type.value=='drift'):
+            npoly=1
+            ddir=np.array([[]])
+        create_table(filename+'/FIELD',
+                     {'DELAY_DIR':
         
         
             
