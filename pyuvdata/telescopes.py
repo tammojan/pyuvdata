@@ -55,7 +55,7 @@ class Telescope(uvbase.UVBase):
 
         super(Telescope, self).__init__()
 
-   def get_antenna_positions(self, Nants):
+    def get_antenna_positions(self, Nants):
        # Antenna positions are stored in npz files as ndarrays with shape (Nants, 3).
        # These are in the ITRF frame as obtained by taking relative positions and rotating.
        # Guess which file to read positions from based on Nants and telescope_name.

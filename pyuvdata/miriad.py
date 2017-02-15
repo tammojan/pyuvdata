@@ -131,7 +131,7 @@ class Miriad(UVData):
             if telescope_obj is not False:
                   self.antenna_positions = telescope_obj.get_antenna_positions(self.Nants_telescope)
                   if self.antenna_positions is None:
-                      warnings.warn("Antenna positions are not present in Miriad file, and are not known for {telescope_name} with current configuration.").format(telescope_name=telescope_obj.telescope_name)
+                      warnings.warn("Antenna positions are not present in Miriad file, and are not known for {telescope_name} with current configuration.".format(telescope_name=telescope_obj.telescope_name))
                   else:
                       self.antenna_positions = \
                       self.antenna_positions.reshape(3, self.Nants_telescope).T
