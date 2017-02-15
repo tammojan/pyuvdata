@@ -56,11 +56,15 @@ class Miriad(UVData):
                               'antenna_positions': 'antpos',  # take deltas
                               }
         for item in miriad_header_data:
-            if isinstance(uv[miriad_header_data[item]], str):
-                header_value = uv[miriad_header_data[item]].replace('\x00', '')
+            if miriad_header_data[item] in uv.vars():
+                if isinstance(uv[miriad_header_data[item]], str):
+                    header_value = uv[miriad_header_data[item]].replace('\x00', '')
+                else:
+                    header_value = uv[miriad_header_data[item]]
+                setattr(self, item, header_value)
             else:
-                header_value = uv[miriad_header_data[item]]
-            setattr(self, item, header_value)
+		warnings.warn("Missing miriad header item "+item)
+                continue   #Missing from miriad file header
 
         latitude = uv['latitud']  # in units of radians
         longitude = uv['longitu']
@@ -121,10 +125,27 @@ class Miriad(UVData):
 
         self.history = uv['history']
         try:
-            self.antenna_positions = \
-                self.antenna_positions.reshape(3, self.Nants_telescope).T
-        except(ValueError):  # workaround for known errors with bad antenna positions
-            self.antenna_positions = None
+            self.antenna_positions=uv['antpos']
+        except(KeyError):
+            telescope_obj = uvtel.get_telescope(self.telescope_name)
+            if telescope_obj is not False:
+                  self.antenna_positions = telescope_obj.get_antenna_positions(self.Nants_telescope)
+                  if self.antenna_positions is None:
+                      warnings.warn("Antenna positions are not present in Miriad file, and are not known for {telescope_name} with current configuration.").format(telescope_name=telescope_obj.telescope_name)
+                  else:
+                      self.antenna_positions = \
+                      self.antenna_positions.reshape(3, self.Nants_telescope).T
+                      warnings.warn("Antenna positions are not present in Miriad file. Using known values for {telescope_name}.".format(telescope_name=telescope_obj.telescope_name))
+            else:
+                  self.antenna_positions = None
+                  warnings.warn("Antenna positions are not present in Miriad file and telescope {telescope_name} is not in " +
+                                "known_telescopes. Antenna positions are set to None.".format(telescope_name=self.telescope_name))
+#        try:
+#            self.antenna_positions = \
+#                self.antenna_positions.reshape(3, self.Nants_telescope).T
+#        except(ValueError):  # workaround for known errors with bad antenna positions
+#            self.antenna_positions = None
+
         self.channel_width *= 1e9  # change from GHz to Hz
 
         # read through the file and get the data
