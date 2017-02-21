@@ -55,12 +55,12 @@ class Telescope(uvbase.UVBase):
 
         super(Telescope, self).__init__()
 
-    def get_antenna_positions(self, Nants):
+#    def get_antenna_positions(self, Nants):
        # Antenna positions are stored in npz files as ndarrays with shape (Nants, 3).
        # These are in the ITRF frame as obtained by taking relative positions and rotating.
        # Guess which file to read positions from based on Nants and telescope_name.
 #       filenames = { 'hera19' : , 'paper128' : , 'paper64' : , 'mwa128' : }
-       selection = None
+#       selection = None
 #       if self._telescope_name.lower() == 'hera':
 #           if Nants==19: selection='hera19'
 #       elif self._telescope_name.lower() == 'mwa':
@@ -69,11 +69,11 @@ class Telescope(uvbase.UVBase):
 #           if Nants==128: selection='paper128'
 #           if Nants==64: selection='paper64'
 
-       if selection is None:
-           return None
-       else:
-           antfile = filenames[selection]
-           return np.load(antfile)['antpos']
+#       if selection is None:
+#           return None
+#       else:
+#           antfile = filenames[selection]
+#           return np.load(antfile)['antpos']
 
 
 def known_telescopes():

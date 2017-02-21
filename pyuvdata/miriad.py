@@ -11,7 +11,7 @@ import telescopes as uvtel
 
 class Miriad(UVData):
     """
-    Defines a Miriad-speficic subclass of UVData for reading and writing Miriad files.
+    Defines a Miriad-specific subclass of UVData for reading and writing Miriad files.
     This class should not be interacted with directly, instead use the read_miriad
     and write_miriad methods on the UVData class.
     """
@@ -127,19 +127,20 @@ class Miriad(UVData):
         try:
             self.antenna_positions=uv['antpos']
         except(KeyError):
-            telescope_obj = uvtel.get_telescope(self.telescope_name)
-            if telescope_obj is not False:
-                  self.antenna_positions = telescope_obj.get_antenna_positions(self.Nants_telescope)
-                  if self.antenna_positions is None:
-                      warnings.warn("Antenna positions are not present in Miriad file, and are not known for {telescope_name} with current configuration.".format(telescope_name=telescope_obj.telescope_name))
-                  else:
-                      self.antenna_positions = \
-                      self.antenna_positions.reshape(3, self.Nants_telescope).T
-                      warnings.warn("Antenna positions are not present in Miriad file. Using known values for {telescope_name}.".format(telescope_name=telescope_obj.telescope_name))
-            else:
-                  self.antenna_positions = None
-                  warnings.warn("Antenna positions are not present in Miriad file and telescope {telescope_name} is not in " +
-                                "known_telescopes. Antenna positions are set to None.".format(telescope_name=self.telescope_name))
+#            telescope_obj = uvtel.get_telescope(self.telescope_name)
+#            if telescope_obj is not False:
+#                  self.antenna_positions = telescope_obj.get_antenna_positions(self.Nants_telescope)
+#                  if self.antenna_positions is None:
+#                      warnings.warn("Antenna positions are not present in Miriad file, and are not known for {telescope_name} with current configuration.".format(telescope_name=telescope_obj.telescope_name))
+#                  else:
+#                      self.antenna_positions = \
+#                      self.antenna_positions.reshape(3, self.Nants_telescope).T
+#                      warnings.warn("Antenna positions are not present in Miriad file. Using known values for {telescope_name}.".format(telescope_name=telescope_obj.telescope_name))
+#            else:
+                  self.antenna_positions = np.zeros((3,self.Nants_telescope)).T
+                  #warnings.warn("Antenna positions are not present in Miriad file and telescope {telescope_name} is not in " +
+                  #              "known_telescopes. Antenna positions are set to None.".format(telescope_name=self.telescope_name))
+                  warnings.warn("Antenna positions are not present in Miriad file. They have been set to 0.")
 #        try:
 #            self.antenna_positions = \
 #                self.antenna_positions.reshape(3, self.Nants_telescope).T
@@ -210,7 +211,6 @@ class Miriad(UVData):
         ant_j_unique = list(set(
             np.concatenate([[k[3] for k in d] for d in data_accumulator.values()])))
         sorted_unique_ants = sorted(list(set(ant_i_unique + ant_j_unique)))
-
         unique_blts = []
         for d in data_accumulator.values():
             for k in d:
