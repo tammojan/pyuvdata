@@ -230,6 +230,43 @@ def test_phase_unphaseHERA():
     del(UV_raw)
 
 
+def test_unphase_to_drift():
+    """
+    Read in two files which were phased externally. Unphase both to drift
+    and ensure they are equal.
+    """
+    file1 = os.path.join(DATA_PATH, '1133866760_1.uvfits')
+    uv1 = UVData()
+    uv1.read_uvfits(file1)
+    file2 = os.path.join(DATA_PATH, '1133866760_2.uvfits')
+    uv2 = UVData()
+    uv2.read_uvfits(file2)
+
+    uv1.unphase_to_drift()
+    uv2.unphase_to_drift()
+
+    nt.assert_equal(uv1, uv2)
+
+
+def test_phase():
+    """
+    Read in two files which were phased externally. Phase the first to the
+    second's RA/Dec/epoch, and ensure they are equal.
+    """
+    file1 = os.path.join(DATA_PATH, '1133866760_1.uvfits')
+    uv1 = UVData()
+    uv1.read_uvfits(file1)
+    file2 = os.path.join(DATA_PATH, '1133866760_2.uvfits')
+    uv2 = UVData()
+    uv2.read_uvfits(file2)
+
+    uv1.unphase_to_drift()
+    epoch = (uv2.phase_center_epoch - 2000.) * 365.2422 + ephem.J2000
+    uv1.phase(uv2.phase_center_ra, uv2.phase_center_dec, epoch)
+
+    nt.assert_equal(uv1, uv2)
+
+
 def test_select_blts():
     uv_object = UVData()
     testfile = os.path.join(DATA_PATH, 'zen.2456865.60537.xy.uvcRREAA')
