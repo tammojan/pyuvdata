@@ -4,7 +4,6 @@ import os
 import shutil
 import numpy as np
 import warnings
-#import aipy as a
 from uvdata import UVData
 import telescopes as uvtel
 import _miriad
@@ -26,7 +25,6 @@ class Miriad(UVData):
                   "polarization_array".format(pol=pol))
         return pol_ind
 
-    @profile
     def read_miriad(self, filepath, correct_lat_lon=True, run_check=True, run_check_acceptability=True):
         """
         Read in data from a miriad file.
@@ -429,7 +427,6 @@ class Miriad(UVData):
         if run_check:
             self.check(run_check_acceptability=run_check_acceptability)
 
-    @profile
     def write_miriad(self, filepath, run_check=True, run_check_acceptability=True,
                      clobber=False, no_antnums=False):
         """
@@ -596,7 +593,36 @@ class Miriad(UVData):
             self.check(run_check_acceptability=run_check_acceptability)
 
 
-class miriad_uv(_miriad.UV)
+itemtable = {
+    'obstype' : 'a',
+    'history' : 'a',
+    'vartable': 'a',
+    #'visdata' : '?',
+    #'flags'   : 'i',
+    #'wflags'  : 'i',
+    #'gains'   : '?',
+    'ngains'  : 'i',
+    'nfeeds'  : 'i',
+    'ntau'    : 'i',
+    'nsols'   : 'i',
+    'interval': 'd',
+    'leakage' : 'c',
+    'freq0'   : 'd',
+    'freqs'   : '?',
+    'bandpass': 'c',
+    'nspect0' : 'i',
+    'nchan0'  : 'i',
+}
+
+data_types = {
+    'a' : "ascii (NULL terminated)",
+    'r' : "real (32 bin IEEE)",
+    'd' : "double (64 bit)",
+    'c' : "complex (2 * 32 bit IEEE)",
+    'i' : "integer (32 bit two's complement)",
+}
+
+class miriad_UV(_miriad.UV):
     """Top-level interface to a Miriad UV data set. Adapted from AIPY"""
     def __init__(self, filename, status='old', corrmode='r'):
         """Open a miriad file.  status can be ('old','new','append').  
