@@ -563,7 +563,6 @@ class UVData(UVBase):
         epoch = self.juldate2ephem(time)
         self.phase(ra, dec, epoch)
 
-    @profile
     def phase(self, ra, dec, epoch):
         """
         Phase a drift scan dataset to a single ra/dec at a particular epoch.
