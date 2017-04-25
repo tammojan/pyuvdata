@@ -12,19 +12,19 @@ print('Reading first file')
 uv.read_uvfits('pyuvdata/data/1133866760.uvfits')
 
 unique_times = np.unique(uv.time_array)
-uv.select(freq_chans=[0, 1], times=unique_times[[0, uv.Ntimes / 2]],
-          polarizations=[-5], ant_pairs_nums=(2, 11))
+uv.select(freq_chans=[217, 218], times=unique_times[[2, uv.Ntimes / 2]],
+          polarizations=[-5], ant_pairs_nums=(90, 127))
 
 print('Writing first file')
-uv.write_uvfits('pyuvdata/data/1133866760_downselect.uvfits')
+uv.write_uvfits('pyuvdata/data/1133866760_1.uvfits')
 
 # Second file phased to 00h00m00.0s -18d00m00s
 print('Reading second file')
-uv.read_uvfits('pyuvdata/data/1133866760.uvfits')
+uv.read_uvfits('pyuvdata/data/1133866760_rephase.uvfits')
 
 unique_times = np.unique(uv.time_array)
-uv.select(freq_chans=[0, 1], times=unique_times[[0, uv.Ntimes / 2]],
-          polarizations=[-5], ant_pairs_nums=(2, 11))
+uv.select(freq_chans=[217, 218], times=unique_times[[2, uv.Ntimes / 2]],
+          polarizations=[-5], ant_pairs_nums=(90, 127))
 
 print('Writing second file')
-uv.write_uvfits('pyuvdata/data/1133866760_rephase_downselect.uvfits')
+uv.write_uvfits('pyuvdata/data/1133866760_2.uvfits')
