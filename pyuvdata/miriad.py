@@ -457,9 +457,23 @@ class Miriad(UVData):
         freq_spacing = self.freq_array[0, 1:] - self.freq_array[0, :-1]
         if not np.isclose(np.min(freq_spacing), np.max(freq_spacing),
                           rtol=self._freq_array.tols[0], atol=self._freq_array.tols[1]):
-            raise ValueError('The frequencies are not evenly spaced (probably '
+            #raise ValueError('The frequencies are not evenly spaced (probably '
+            #                 'because of a select operation). The miriad format '
+            #                 'does not support unevenly spaced frequencies.')
+            warnings.warn('The frequencies are not evenly spaced (probably '
                              'because of a select operation). The miriad format '
-                             'does not support unevenly spaced frequencies.')
+                             'does not support unevenly spaced frequencies. Attempting to round frequencies until evenly spaced.')
+            even = False
+            ind = 1
+            while not even:
+                 self.freq_array = np.floor(self.freq_array/10**ind) * 10**ind
+                 ind += 1
+                 print self.freq_array[0,100], ind, even
+                 print np.mean(freq_spacing)
+                 #freq_spacing = self.freq_array[0, 1:] - self.freq_array[0, :-1]
+                 freq_spacing = np.diff(self.freq_array[0,:])
+                 even =  np.isclose(np.min(freq_spacing), np.max(freq_spacing), rtol=self._freq_array.tols[0], atol=self._freq_array.tols[1])
+                 if ind == 10: even = True
         if not np.isclose(np.max(freq_spacing), self.channel_width,
                           rtol=self._freq_array.tols[0], atol=self._freq_array.tols[1]):
             raise ValueError('The frequencies are separated by more than their '
