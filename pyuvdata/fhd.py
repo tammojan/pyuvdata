@@ -193,6 +193,21 @@ class FHD(UVData):
         self.integration_time = float(obs['TIME_RES'][0])
         self.channel_width = float(obs['FREQ_RES'][0])
 
+ 
+        freq_spacing = self.freq_array[0, 1:] - self.freq_array[0, :-1]
+        if not np.isclose(np.min(freq_spacing), np.max(freq_spacing),
+                          rtol=self._freq_array.tols[0], atol=self._freq_array.tols[1]):
+            warnings.warn('The frequencies are not evenly spaced (probably '
+                             'because of a select operation). The miriad and uvfits formats '
+                             'do not support unevenly spaced frequencies. Recalculating frequency array.')
+            # Recalculate the frequency array if unevenly spaced, to account for floating-point bug in FHD
+            # This is a band-aid. Please don't merge it.
+            self.channel_width = np.floor(self.channel_width/10)*10  # Avoid floating-point errors from FHD
+            self.freq_array[0,:] = (np.arange(self.Nfreqs) * self.channel_width +
+                           self.freq_array[0,0])
+ 
+ 
+
         # # --- observation information ---
         self.telescope_name = str(obs['INSTRUMENT'][0].decode())
 
