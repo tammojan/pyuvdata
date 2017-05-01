@@ -27,6 +27,15 @@ def test_construct_version_info():
 
     nt.assert_equal(pyuvdata.version.construct_version_info(), test_version_info)
 
+    cwd = os.getcwd()
+    os.chdir(os.path.expanduser("~"))
+    print(os.getcwd())
+    import pyuvdata as pyuv
+    external_version_info = pyuv.version.construct_version_info()
+    os.chdir(cwd)
+
+    nt.assert_equal(external_version_info, test_version_info)
+
 
 def test_main():
     version_info = pyuvdata.version.construct_version_info()
