@@ -230,6 +230,26 @@ def test_phase_unphaseHERA():
     del(UV_raw)
 
 
+def test_phase_to_time():
+    """
+    Test the function which phases to the ra/dec of zenith at a particular time.
+    With only a single time sample, this should be equivalent to unphasing to drift.
+    """
+    testfile = os.path.join(DATA_PATH, 'hera_testfile')
+    UV_raw = UVData()
+    status = uvtest.checkWarnings(UV_raw.read_miriad, [testfile],
+                                  {'correct_lat_lon': False}, known_warning='miriad')
+    unique_times = np.unique(UV_raw.time_array)
+    UV_raw.select(times=unique_times[0])
+    UV_phase = UVData()
+    status = uvtest.checkWarnings(UV_phase.read_miriad, [testfile],
+                                  {'correct_lat_lon': False}, known_warning='miriad')
+    UV_phase.select(times=unique_times[0])
+    UV_phase.phase_to_time(UV_phase.time_array[0])
+    nt.assert_equal(UV_raw._data_array, UV_phase._data_array)
+    nt.assert_equal(UV_raw._uvw_array, UV_phase._uvw_array)
+
+
 def test_unphase_to_drift():
     """
     Read in two files which were phased externally. Unphase both to drift
