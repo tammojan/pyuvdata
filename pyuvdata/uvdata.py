@@ -510,9 +510,9 @@ class UVData(UVBase):
 
         for ind, jd in enumerate(self.time_array):
 
-            # apply -w phasor
+            # apply first w phasor
             w_lambda = self.uvw_array[ind, 2] / const.c.to('m/s').value * self.freq_array
-            phs = np.exp(-1j * 2 * np.pi * (-1) * w_lambda)
+            phs = np.exp(1j * 2 * np.pi * w_lambda)
             phs.shape += (1,)
             self.data_array[ind] *= phs
 
@@ -527,14 +527,20 @@ class UVData(UVBase):
             self.zenith_dec[ind] = zenith_dec
 
             # generate rotation matrices
-            m0 = a.coord.top2eq_m(0., phase_center_dec)
-            m1 = a.coord.eq2top_m(phase_center_ra - zenith_ra, zenith_dec)
+            m0 = a.coord.top2eq_m(zenith_ra - phase_center_ra, phase_center_dec)
+            m1 = a.coord.eq2top_m(0., zenith_dec)
 
             # rotate and write uvws
             uvw = self.uvw_array[ind, :]
             uvw = np.dot(m0, uvw)
             uvw = np.dot(m1, uvw)
             self.uvw_array[ind, :] = uvw
+
+            # apply second w phasor
+            w_lambda = self.uvw_array[ind, 2] / const.c.to('m/s').value * self.freq_array
+            phs = np.exp(-1j * 2 * np.pi * w_lambda)
+            phs.shape += (1,)
+            self.data_array[ind] *= phs
 
         # remove phase center
         self.phase_center_ra = None
@@ -623,8 +629,14 @@ class UVData(UVBase):
             ra, dec = precess_pos.a_ra, precess_pos.a_dec
 
             # generate rotation matrices
-            m0 = a.coord.top2eq_m(self.lst_array[ind] - obs.sidereal_time(), latitude)
-            m1 = a.coord.eq2top_m(self.lst_array[ind] - ra, dec)
+            m0 = a.coord.top2eq_m(0., latitude)
+            m1 = a.coord.eq2top_m(obs.sidereal_time() - ra, dec)
+
+            # We will apply the phasor correction in two steps
+            w_lambda = self.uvw_array[ind, 2] / const.c.to('m/s').value * self.freq_array
+            phs = np.exp(1j * 2 * np.pi * w_lambda)
+            phs.shape += (1,)
+            self.data_array[ind] *= phs
 
             # rotate and write uvws
             uvw = self.uvw_array[ind, :]
