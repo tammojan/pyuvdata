@@ -8,6 +8,7 @@ from uvdata import UVData
 import telescopes as uvtel
 import _miriad
 
+
 class Miriad(UVData):
     """
     Defines a Miriad-specific subclass of UVData for reading and writing Miriad files.
@@ -25,7 +26,8 @@ class Miriad(UVData):
                   "polarization_array".format(pol=pol))
         return pol_ind
 
-    def read_miriad(self, filepath, correct_lat_lon=True, run_check=True, run_check_acceptability=True):
+    def read_miriad(self, filepath, correct_lat_lon=True, run_check=True,
+                    run_check_acceptability=True, phase_type=None):
         """
         Read in data from a miriad file.
 
