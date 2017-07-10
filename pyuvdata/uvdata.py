@@ -6,6 +6,7 @@ import numpy as np
 import warnings
 import ephem
 from uvbase import UVBase
+from uvcal import UVCal
 import parameter as uvp
 import telescopes as uvtel
 import utils as uvutils
@@ -1781,3 +1782,56 @@ class UVData(UVBase):
         antpairpols = self.get_antpairpols()
         for key in antpairpols:
             yield (key, self.get_data(key, squeeze=squeeze))
+
+    def apply_cal(self, uvcal, run_check=True, check_extra=True,
+                  run_check_acceptability=True):
+        """
+        Applies the gains from a UVCal object to the data_array.
+
+        Args:
+            uvcal: UVCal object associated with the UVData object.
+            run_check: Option to check for the existence and proper shapes of
+                parameters before writing the file. Default is True.
+            check_extra: Option to check optional parameters as well as required
+                ones. Default is True.
+            run_check_acceptability: Option to check acceptable range of the values of
+                parameters before writing the file. Default is True.
+        """
+        # Check that objects are valid and what they say they are
+        if not isinstance(uvcal, UVCal):
+            raise(ValueError('Only UVCal object can be applied as calibration '
+                             'a UVData object.'))
+        if run_check:
+            self.check(check_extra=check_extra, run_check_acceptability=run_check_acceptability)
+            uvcal.check(check_extra=check_extra, run_check_acceptability=run_check_acceptability)
+        # Check that objects are compatible
+        is_delay = uvcal.cal_type == 'delay'  # shorthand
+        if self.telescope_name is not uvcal.telescope_name:
+            raise(ValueError('Cannot apply calibration from telescope {t1} to '
+                             'data from telescope {t2}'.format(t1=uvcal.telescope_name,
+                                                               t2=self.telescope_name)))
+        if (self.time_array.min() < uvcal.time_range[0]) or (self.time_array.max() >
+                                                             uvcal.time_range[1]):
+            raise(ValueError('Data in UVData object is outside time range of '
+                             'UVCal object. Cannot apply calibration.'))
+        for ant in self.get_ants():
+            if ant not in uvcal.ant_array:
+                raise(ValueError('Antenna {ant} not in UVCal object. Cannot '
+                                 'apply calibration.'.format(ant=ant)))
+        if is_delay:
+            if (self.freq_array.min() < uvcal.min()) or (self.freq_array.max() <
+                                                         uvcal.max()):
+                raise(ValueError('Frequencies in data are outside frequency '
+                                 'range of calibration. Cannot apply calibration.'))
+        else:
+            if not np.all(self.freq_array in uvcal.freq_array):
+                raise(ValueError('Cannot apply calibration. Frequency arrays of '
+                                 'UVData and UVCal must match.'))
+        for pol in self.get_feedpols():
+            if uvutils.polstr2num(pol * 2) not in uvcal.jones_array:
+                raise(ValueError('Jones element j{j} not present in UVCal. '
+                                 'Cannot apply calibration.'.format(j=pol * 2)))
+        # Apply calibration
+            # delay vs gain types
+        # Update history
+        # check objects
