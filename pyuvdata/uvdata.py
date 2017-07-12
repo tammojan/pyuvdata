@@ -1783,13 +1783,14 @@ class UVData(UVBase):
         for key in antpairpols:
             yield (key, self.get_data(key, squeeze=squeeze))
 
-    def apply_cal(self, uvcal, run_check=True, check_extra=True,
+    def apply_cal(self, uvcal, apply_flags=True, run_check=True, check_extra=True,
                   run_check_acceptability=True):
         """
         Applies the gains from a UVCal object to the data_array.
 
         Args:
             uvcal: UVCal object associated with the UVData object.
+            apply_flags: Apply flags from UVCal object to the UVData object
             run_check: Option to check for the existence and proper shapes of
                 parameters before writing the file. Default is True.
             check_extra: Option to check optional parameters as well as required
@@ -1831,7 +1832,49 @@ class UVData(UVBase):
             if uvutils.polstr2num(pol * 2) not in uvcal.jones_array:
                 raise(ValueError('Jones element j{j} not present in UVCal. '
                                  'Cannot apply calibration.'.format(j=pol * 2)))
+
+        # Rearrange gains to match data
+        if is_delay:
+            # Make gain array
+            gains = np.exp(2j * np.pi * self.frequency_array[np.newaxis, :, :,
+                                                             np.newaxis, np.newaxis] *
+                           uvcal.delay_array)
+        else:
+            # Map frequencies of cal to data
+            freq_ind = [np.where(uvcal.freq_array == f)[0][0] for f in self.freq_array]
+            gains = uvcal.gain_array[:, :, freq_ind, :, :]
+
+        # Map time_arrays
+        t_ind = [np.argmin(np.abs(uvcal.time_array - t)) for t in self.time_array]
+        if uvcal.Njones <= 2:
+            # Don't bother with Mueller matrices
+            p1_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[0] * 2)[0])
+                      for p in uvutils.polnum2str(self.polarization_array)]
+            p2_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[1] * 2)[0])
+                      for p in uvutils.polnum2str(self.polarization_array)]
+            for bl in self.get_baseline_nums():
+                ant1, ant2 = self.baseline_to_antnums(bl)
+                ant_ind1 = np.where(uvcal.ant_array == ant1)[0]
+                ant_ind2 = np.where(uvcal.ant_array == ant2)[0]
+                if uvcal.gain_convention is 'multiply':
+                    self.data_array *= (gains[ant_ind1, :, :, t_ind, p1_ind] *
+                                        np.conj(gains[ant_ind2, :, :, t_ind, p2_ind]))
+                else:
+                    self.data_array /= (gains[ant_ind1, :, :, t_ind, p1_ind] *
+                                        np.conj(gains[ant_ind2, :, :, t_ind, p2_ind]))
+        # Form Jones matrices to prepare for Mueller
+        gains = np.moveaxis(gains, -1, 0)  # put pol in front
+        jones_dict = {-5: (0, 0), -6: (1, 1), -7: (1, 2), -8: (2, 1),
+                      -1: (0, 0), -2: (1, 1), -3: (1, 2), -4: (2, 1)}
+        jones = np.zeros((2, 2) + gains.shape[1:], dtype=gains.dtype)
+        for pol in range(uvcal.Njones):
+            jones[jones_dict[uvcal.jones_array[pol]]] = gains[pol]
         # Apply calibration
-            # delay vs gain types
+        for bl in self.get_baseline_nums():
+            ant1, ant2 = self.baseline_to_antnums(bl)
+            ant_ind1 = np.where(uvcal.ant_array == ant1)[0]
+            ant_ind2 = np.where(uvcal.ant_array == ant2)[0]
+            jones = uvcal.gain_array
+        # apply flags
         # Update history
         # check objects
