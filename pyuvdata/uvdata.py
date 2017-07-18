@@ -1841,40 +1841,55 @@ class UVData(UVBase):
                            uvcal.delay_array)
         else:
             # Map frequencies of cal to data
-            freq_ind = [np.where(uvcal.freq_array == f)[0][0] for f in self.freq_array]
+            freq_ind = np.array([np.where(uvcal.freq_array == f)[0][0] for f in self.freq_array])
             gains = uvcal.gain_array[:, :, freq_ind, :, :]
 
         # Map time_arrays
         t_ind = [np.argmin(np.abs(uvcal.time_array - t)) for t in self.time_array]
+        # Check if we need Mueller matrices
         if uvcal.Njones <= 2:
             # Don't bother with Mueller matrices
-            p1_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[0] * 2)[0])
+            p1_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[0] * 2))[0][0]
                       for p in uvutils.polnum2str(self.polarization_array)]
-            p2_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[1] * 2)[0])
+            p2_ind = [np.where(uvcal.jones_array == uvutils.polstr2num(p[1] * 2))[0][0]
                       for p in uvutils.polnum2str(self.polarization_array)]
             for bl in self.get_baseline_nums():
                 ant1, ant2 = self.baseline_to_antnums(bl)
-                ant_ind1 = np.where(uvcal.ant_array == ant1)[0]
-                ant_ind2 = np.where(uvcal.ant_array == ant2)[0]
+                cal_ind1 = np.where(uvcal.ant_array == ant1)[0][0]
+                cal_ind2 = np.where(uvcal.ant_array == ant2)[0][0]
+                bl_ind = np.where(self.baseline_array == bl)[0]
+                bl_gains = (gains[cal_ind1, :, :, t_ind[bl_ind], p1_ind] *
+                            np.conj(gains[cal_ind2, :, :, t_ind[bl_ind], p2_ind]))
+                bl_gains = np.moveaxis(bl_gains, 2, 0)
                 if uvcal.gain_convention is 'multiply':
-                    self.data_array *= (gains[ant_ind1, :, :, t_ind, p1_ind] *
-                                        np.conj(gains[ant_ind2, :, :, t_ind, p2_ind]))
+                    self.data_array[bl_ind, :, :, :] *= bl_gains
                 else:
-                    self.data_array /= (gains[ant_ind1, :, :, t_ind, p1_ind] *
-                                        np.conj(gains[ant_ind2, :, :, t_ind, p2_ind]))
-        # Form Jones matrices to prepare for Mueller
-        gains = np.moveaxis(gains, -1, 0)  # put pol in front
-        jones_dict = {-5: (0, 0), -6: (1, 1), -7: (1, 2), -8: (2, 1),
-                      -1: (0, 0), -2: (1, 1), -3: (1, 2), -4: (2, 1)}
-        jones = np.zeros((2, 2) + gains.shape[1:], dtype=gains.dtype)
-        for pol in range(uvcal.Njones):
-            jones[jones_dict[uvcal.jones_array[pol]]] = gains[pol]
-        # Apply calibration
-        for bl in self.get_baseline_nums():
-            ant1, ant2 = self.baseline_to_antnums(bl)
-            ant_ind1 = np.where(uvcal.ant_array == ant1)[0]
-            ant_ind2 = np.where(uvcal.ant_array == ant2)[0]
-            jones = uvcal.gain_array
-        # apply flags
-        # Update history
-        # check objects
+                    self.data_array[bl_ind, :, :, :] /= bl_gains
+        else:
+            # Form Jones matrices to prepare for Mueller
+            gains = np.moveaxis(gains, -1, 0)  # put pol in front
+            jones_dict = {-5: (0, 0), -6: (1, 1), -7: (1, 2), -8: (2, 1),
+                          -1: (0, 0), -2: (1, 1), -3: (1, 2), -4: (2, 1)}
+            jones = np.zeros((2, 2) + gains.shape[1:], dtype=gains.dtype)
+            for pol in range(uvcal.Njones):
+                jones[jones_dict[uvcal.jones_array[pol]]] = gains[pol]
+            # Loop through baselines
+            for bl in self.get_baseline_nums():
+                ant1, ant2 = self.baseline_to_antnums(bl)
+                cal_ind1 = np.where(uvcal.ant_array == ant1)[0][0]
+                cal_ind2 = np.where(uvcal.ant_array == ant2)[0][0]
+                bl_ind = np.where(self.baseline_array == bl)[0]
+                j1 = jones[:, :, cal_ind1, :, :, t_ind[bl_ind]]
+                j2 = np.conj(jones[:, :, cal_ind2, :, :, t_ind[bl_ind]])
+                mueller = np.array([[j1[0, 0] * j2[0, 0], j1[0, 0] * j2[0, 1],
+                                     j1[0, 1] * j2[0, 0], j1[0, 1] * j2[0, 1]],
+                                    [j1[0, 0] * j2[1, 0], j1[0, 0] * j2[1, 1],
+                                     j1[0, 1] * j2[1, 0], j1[0, 1] * j2[1, 1]],
+                                    [j1[1, 0] * j2[0, 0], j1[1, 0] * j2[0, 1],
+                                     j1[1, 1] * j2[0, 0], j1[1, 1] * j2[0, 1]],
+                                    [j1[1, 0] * j2[1, 0], j1[1, 0] * j2[1, 1],
+                                     j2[1, 1] * j2[1, 0], j1[1, 1] * j2[1, 1]]])
+
+            # TODO: apply flags
+            # TODO: Update history
+            # TODO: check objects
