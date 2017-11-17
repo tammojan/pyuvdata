@@ -278,7 +278,7 @@ g) Quick access to file attributes of a UV* object (UVData, UVCal, UVFITS, etc)
 
   pyuvdata_inspect.py --attr=Ntimes,Nfreqs,Nbls <uv*_file> # will print Ntimes,Nfreqs,Nbls to stdout
 
-  pyuvdata_inspect.py -i <uv*_file> # will load object to instance name "uv" and will remain in interpreter 
+  pyuvdata_inspect.py -i <uv*_file> # will load object to instance name "uv" and will remain in interpreter
 
 UVData: Selecting data
 -----------------------
