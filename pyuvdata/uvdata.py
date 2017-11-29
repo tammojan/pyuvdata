@@ -1918,13 +1918,13 @@ class UVData(UVBase):
             m = re.search(bl_re, ant_str[str_pos:])
             if m is None:
                 if ant_str[str_pos:].upper().startswith('ALL'):
-                    if len(ant_str[str_pos:].split(',')) > 1:
-                        if for_select:
-                            ant_pairs_nums = self.get_antpairs()
-                        else:
-                            for pair in ant_pairs_data:
-                                antpair_pols[str(pair).strip('()')] = (
-                                    uvutils.polstr2num(pols_data))
+                    if (for_select and
+                        len(ant_str[str_pos:].split(',')) > 1):
+                        ant_pairs_nums = self.get_antpairs()
+                    elif not for_select:
+                        for pair in ant_pairs_data:
+                            antpair_pols[str(pair).strip('()')] = (
+                                uvutils.polstr2num(pols_data))
                 elif ant_str[str_pos:].upper().startswith('AUTO'):
                     for pair in ant_pairs_data:
                         if for_select:
@@ -1954,6 +1954,8 @@ class UVData(UVBase):
                 else:
                     raise ValueError('Unparsible argument {s}'.format(
                                             s=ant_str))
+
+                print antpair_pols.keys()
 
                 comma_cnt = ant_str[str_pos:].find(',')
                 if comma_cnt >= 0:
