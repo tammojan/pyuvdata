@@ -1927,22 +1927,22 @@ class UVData(UVBase):
                                 uvutils.polstr2num(pols_data))
                 elif ant_str[str_pos:].upper().startswith('AUTO'):
                     for pair in ant_pairs_data:
-                        if for_select:
-                            if (pair[0] == pair[1] and
-                                not pair in ant_pairs_nums):
-                                ant_pairs_nums.append(pair)
-                        elif pair[0] == pair[1]:
-                            antpair_pols[str(pair).strip('()')] = (
-                                uvutils.polstr2num(pols_data))
+                        if pair[0] == pair[1]:
+                            if for_select:
+                                if not pair in ant_pairs_nums:
+                                    ant_pairs_nums.append(pair)
+                            else:
+                                antpair_pols[str(pair).strip('()')] = (
+                                    uvutils.polstr2num(pols_data))
                 elif ant_str[str_pos:].upper().startswith('CROSS'):
                     for pair in ant_pairs_data:
-                        if for_select:
-                            if not (pair[0] == pair[1] or
-                                pair in ant_pairs_nums):
-                                ant_pairs_nums.append(pair)
-                        elif not pair[0] == pair[1]:
-                            antpair_pols[str(pair).strip('()')] = (
-                                uvutils.polstr2num(pols_data))
+                        if not pair[0] == pair[1]:
+                            if for_select:
+                                if not pair in ant_pairs_nums:
+                                    ant_pairs_nums.append(pair)
+                            else:
+                                antpair_pols[str(pair).strip('()')] = (
+                                    uvutils.polstr2num(pols_data))
                 elif ant_str[str_pos:].upper().startswith('I'):
                     polarizations.append(uvutils.polstr2num('I'))
                 elif ant_str[str_pos:].upper().startswith('Q'):
@@ -1954,8 +1954,6 @@ class UVData(UVBase):
                 else:
                     raise ValueError('Unparsible argument {s}'.format(
                                             s=ant_str))
-
-                print antpair_pols.keys()
 
                 comma_cnt = ant_str[str_pos:].find(',')
                 if comma_cnt >= 0:
