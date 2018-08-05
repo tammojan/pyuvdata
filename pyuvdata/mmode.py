@@ -36,20 +36,20 @@ class UVData2Mmode():
         #create abstract telescope class
         class MyPolarisedTelescope(SimplePolarisedTelescope):
             def beamx(feed, freq):
-                        """Beam for the X polarisation feed.
+                """Beam for the X polarisation feed.
 
-                        Parameters
-                        ----------
-                        feed : integer
-                            Index for the feed.
-                        freq : integer
-                            Index for the frequency.
+                Parameters
+                ----------
+                feed : integer
+                    Index for the feed.
+                freq : integer
+                    Index for the frequency.
 
-                        Returns
-                        -------
-                        beam : np.ndarray
-                            Healpix maps (of size [self._nside, 2]) of the field pattern in the
-                            theta and phi directions.
-                        """
+                Returns
+                -------
+                beam : np.ndarray
+                    Healpix maps (of size [self._nside, 2]) of the field pattern in the
+                    theta and phi directions.
+                """
                 return self.uvb.to_healpix()
             def beamy(feed, freq):
