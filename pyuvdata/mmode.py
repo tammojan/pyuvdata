@@ -48,7 +48,7 @@ class UVDataDriftTelescope():
         Args:
             uvdatasets, a UVData object or list of UVData objects
         """
-        #TODO: Enforce identical antenna data and frequencies. 
+        #TODO: Enforce identical antenna data and frequencies.
         if isinstance(uvdatasets,UVData):
             self.uvd = uvdatasets
         elif isinstance(uvdatasets, list)
