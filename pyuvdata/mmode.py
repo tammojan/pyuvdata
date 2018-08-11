@@ -13,8 +13,9 @@ from caput import time as ctime
 from uvdata import UVData
 import uvbeam as UVBeam
 from driftscan.core.telescope import SimplePolarisedTelescope
+from pyuvsim import AnalyticBeam
 
-class UVDataDriftTelescope():
+class UVDataDrift():
     """
     Class Defining a uvdata+uvbeam object for export to a DriftScanTelescope
     object used in m-mode analyses.
@@ -31,11 +32,11 @@ class UVDataDriftTelescope():
         """
         Set uvbeam object with a single beam or list of beams (for each antenna beam)
         Args:
-            beams, UVBeam object (for homogenous arrays) or list of UVBeam objects
+            beams, UVBeam or AnalyticBeam object (for homogenous arrays) or list of UVBeam objects
             giving the beam at each antenna. Number of beam objects should Equal
             the number of antennas in the data set.
         """
-        if isinstance(beams,UVBeam):
+        if isinstance(beams,UVBeam) or isinstance(beams, AnalyticBeam):
             self.uvb = [beams for beams in len(self.uvd.Nants_data)]
         else:
             if len(beams) != self.uvd.Nants_data:
@@ -58,8 +59,19 @@ class UVDataDriftTelescope():
         else:
             raise ValueError("Must provide a UVData object or list of UVData objects")
 
+    def from_transit_telescope_and_timestream():
+        '''
+        create uvdata object from transit telescope object and time-stream data
+        '''
+        return None
 
-    def get_transit_telescope():
+    def to_timestream():
+        '''
+        export uvdata object to an mmode time-stream
+        '''
+        return None
+
+    def to_transit_telescope():
         """Telescope Export beam transfer matrix"""
         #check that self.uvd and self.uvb have been properly initialized
         self.uvd.check()
