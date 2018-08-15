@@ -20,4 +20,8 @@ def test_write_transfer_matrices():
     and writing transfer matrix
     '''
     uv_uniform = UVData()
-    uv_beams_uniform = [ ]
+    uv_uniform.read_uvfits(os.path.join(testdir,'two_antennas_equator_uniform.uvfits'))
+    uv_beams_uniform = [ AnalyticBeam('uniform'), AnalyticBeam('uniform') ]
+    uv_drift_uniform = UVDataDrift()
+    uv_drift_uniform.set_beams(uv_beams_uniform)
+    uv_drift_uniform.set_uv(uv_uniform)
