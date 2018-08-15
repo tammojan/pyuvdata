@@ -12,8 +12,9 @@ from caput import config
 from caput import time as ctime
 from uvdata import UVData
 import uvbeam as UVBeam
-from driftscan.core.telescope import SimplePolarisedTelescope
+from drift.core.telescope import SimplePolarisedTelescope
 from pyuvsim import AnalyticBeam
+from drift.core.beamtransfer import BeamTransfer
 
 class UVDataDrift():
     """
@@ -27,7 +28,7 @@ class UVDataDrift():
         """Create a new UVData2Mmode"""
         self.uvbeam = None
         self.uvdata = None
-        self.transit_telescope = None
+        self.beam_transfer = None
 
     def set_beams(self,beams):
         """
@@ -66,20 +67,21 @@ class UVDataDrift():
         '''
         return None
 
-    def to_timestream():
+    def write_timestream(self):
         '''
         export uvdata object to an mmode time-stream
         '''
         return None
 
-    def write_transfer_matrices():
+    def write_transfer_matrices(self,directory):
         '''
-        Write out transfer matrices 
+        Write out transfer matrices
         '''
+        self.beam_transfer = BeamTransfer()
 
 
 
-    def to_transit_telescope():
+    def to_transit_telescope(self, directory):
         """Telescope Export beam transfer matrix"""
         #check that self.uvdata and self.uvbeam have been properly initialized
         self.uvdata.check()
@@ -130,4 +132,6 @@ class UVDataDrift():
             pos = self.uvdata.get_ENU_antpos(pick_data_ants=True)[:,:-1]
             return pos
 
-        self.transit_telescope =  MyPolarisedTelescope()
+        self.beam_transfer = BeamTransfer()
+        self.beam_transfer.telescope = MyPolarisedTelescope()
+        self.beam_transfer.directory = directory

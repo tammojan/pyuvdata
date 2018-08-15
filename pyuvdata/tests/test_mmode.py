@@ -11,6 +11,7 @@ import pyuvdata.tests as uvtest
 from pyuvdata.data import DATA_PATH
 import numpy as np
 from pyuvdata.mmode import UVDataDrift
+from pyuvsim import AnalyticBeam
 
 def test_write_transfer_matrices():
     '''
@@ -18,3 +19,5 @@ def test_write_transfer_matrices():
     from analytic beam simulation
     and writing transfer matrix
     '''
+    uv_uniform = UVData()
+    uv_beams_uniform = [ ]
