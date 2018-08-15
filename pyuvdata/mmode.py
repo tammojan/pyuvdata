@@ -25,8 +25,9 @@ class UVDataDrift():
 
     def __init__(self):
         """Create a new UVData2Mmode"""
-        self.uvb=None
-        self.uvd=None
+        self.uvbeam = None
+        self.uvdata = None
+        self.transit_telescope = None
 
     def set_beams(self,beams):
         """
@@ -37,12 +38,12 @@ class UVDataDrift():
             the number of antennas in the data set.
         """
         if isinstance(beams,UVBeam) or isinstance(beams, AnalyticBeam):
-            self.uvb = [beams for beams in len(self.uvd.Nants_data)]
+            self.uvbeam = [beams for beams in len(self.uvdata.Nants_data)]
         else:
-            if len(beams) != self.uvd.Nants_data:
+            if len(beams) != self.uvdata.Nants_data:
                 raise ValueError('Number of beams in beam list must equal number of antennas in data set.')
             else:
-                self.uvb = beams
+                self.uvbeam = beams
     def set_uv(self,uvdatasets):
         """
         Set uvdata object (or list of uvdata objects that will be cominbed).
@@ -51,11 +52,11 @@ class UVDataDrift():
         """
         #TODO: Enforce identical antenna data and frequencies.
         if isinstance(uvdatasets,UVData):
-            self.uvd = uvdatasets
+            self.uvdata = uvdatasets
         elif isinstance(uvdatasets, list)
-            self.uvd = uvdatasets[0]
+            self.uvdata = uvdatasets[0]
             for uvd in uvdatasets[1:]:
-                self.uvd.add(uvd)
+                self.uvdata.add(uvd)
         else:
             raise ValueError("Must provide a UVData object or list of UVData objects")
 
@@ -71,12 +72,19 @@ class UVDataDrift():
         '''
         return None
 
+    def write_transfer_matrices():
+        '''
+        Write out transfer matrices 
+        '''
+
+
+
     def to_transit_telescope():
         """Telescope Export beam transfer matrix"""
-        #check that self.uvd and self.uvb have been properly initialized
-        self.uvd.check()
-        self.uvb.check()
-        lat,lon,alt=self.uvd.telescope_location_lat_lon_alt_degrees
+        #check that self.uvdata and self.uvbeam have been properly initialized
+        self.uvdata.check()
+        self.uvbeam.check()
+        lat,lon,alt=self.uvdata.telescope_location_lat_lon_alt_degrees
 
         #create abstract telescope class
         class MyPolarisedTelescope(SimplePolarisedTelescope):
@@ -97,7 +105,7 @@ class UVDataDrift():
                     Healpix maps (of size [self._nside, 2]) of the field pattern in the
                     theta and phi directions.
                 """
-                return self.uvb[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[:,0,0,0,:].squeeze().T
+                return self.uvbeam[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[:,0,0,0,:].squeeze().T
             def beamy(feed, freq):
                 """Beam for the Y polarisation feed.
 
@@ -114,12 +122,12 @@ class UVDataDrift():
                     Healpix maps (of size [self._nside, 2]) of the field pattern in the
                     theta and phi directions.
                 """
-                return self.uvb[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[:,0,1,0,:].squeeze().T
+                return self.uvbeam[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[:,0,1,0,:].squeeze().T
                # Set the feed array of feed positions (in metres EW, NS)
         @property
         def _single_feedpositions(self):
             #Do DriftScanTelescopes support 3d antenna positions?
-            pos = self.uvd.get_ENU_antpos(pick_data_ants=True)[:,:-1]
+            pos = self.uvdata.get_ENU_antpos(pick_data_ants=True)[:,:-1]
             return pos
 
-        return MyPolarisedTelescope()
+        self.transit_telescope =  MyPolarisedTelescope()
