@@ -25,6 +25,7 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
         self.uvbeams = uvbeams
         self.uv_res = uv_res
         self.min_lambda = C / uvdata.freq_array.max()
+        # make sure that all beams are in healpix format
 
     def beamx(self, feed, freq):
         """Beam for the X polarisation feed.

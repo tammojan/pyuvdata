@@ -25,4 +25,9 @@ def test_write_transfer_matrices():
     uv_beams_uniform = [ AnalyticBeam('uniform'), AnalyticBeam('uniform') ]
     outdir = os.path.join(testdir, 'mmode_out_uniform')
     uv_drift_uniform = BeamTransferer(uvdata = uv_uniform, uvbeams = uv_beams_uniform, directory = outdir)
+    print(uv_drift_uniform.beam_transfer.telescope.uniquepairs)
+    print(uv_drift_uniform.beam_transfer.telescope.nfeed)
+    print(uv_drift_uniform.beam_transfer.telescope._single_feedpositions.shape)
+    print(uv_drift_uniform.beam_transfer.telescope.feedpositions.shape)
+
     uv_drift_uniform.write_transfer()
