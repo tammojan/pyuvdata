@@ -7,7 +7,7 @@ and reading/writing uvdata to m-mode time-streams.
 
 requires the driftscan library to be installed
 '''
-
+import numpy as np
 from caput import config
 from caput import time as ctime
 from uvdata import UVData
@@ -23,6 +23,11 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
     def __init__(self, uvdata, uvbeams, uv_res = 0.5):
         self.uvdata = uvdata
         self.uvbeams = uvbeams
+        # convert to healpix.
+        for beam in self.uvbeams:
+            if isinstance(beam, UVBeam):
+                if beam.nside is None:
+                    beam.to_healpix()
         self.uv_res = uv_res
         self.min_lambda = C / uvdata.freq_array.max()
         # make sure that all beams are in healpix format
@@ -43,7 +48,8 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
             Healpix maps (of size [self._nside, 2]) of the field pattern in the
             theta and phi directions.
         """
-        return self.uvbeams[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[0][:,0,0,0,:].squeeze().T
+        fnum = int(np.mod(feed,len(self.uvbeams)))
+        return self.uvbeams[fnum].interp(self._angpos[:,1],self._angpos[:,0],freq)[0][:,0,0,0,:].squeeze().T
 
     def beamy(self, feed, freq):
         """Beam for the Y polarisation feed.
@@ -61,7 +67,8 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
             Healpix maps (of size [self._nside, 2]) of the field pattern in the
             theta and phi directions.
         """
-        return self.uvbeams[feed].interp(self._angpos[:,1],self._angpos[:,0],freq)[0][:,0,1,0,:].squeeze().T
+        fnum = int(np.mod(feed,len(self.uvbeams)))
+        return self.uvbeams[fnum].interp(self._angpos[:,1],self._angpos[:,0],freq)[0][:,0,1,0,:].squeeze().T
        # Set the feed array of feed positions (in metres EW, NS)
     @property
     def _single_feedpositions(self):
@@ -87,4 +94,13 @@ class BeamTransferer():
         self.beam_transfer = BeamTransfer(directory=directory, telescope = my_telescope)
 
     def write_transfer(self):
+        '''
+        Write transfer matrices 
+        '''
         self.beam_transfer.generate()
+
+    def write_data(self):
+        '''
+        Write data into time-stream format.
+        '''
+        return
