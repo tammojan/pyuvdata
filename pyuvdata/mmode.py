@@ -16,22 +16,28 @@ from drift.core.telescope import SimplePolarisedTelescope
 from pyuvsim import AnalyticBeam
 from drift.core.beamtransfer import BeamTransfer
 C = 299792458.
+# Complete klooge! Telescope class needs to be redesigned so that
+# the frequency channels are not class properties!
+FREQ_LOW = 420.
+FREQ_HIGH = 420.1
+NUM_CHAN = 1
 # speed of light
 # create abstract telescope class
 
 
 class UVPolarisedTelescope(SimplePolarisedTelescope):
+    freq_lower = FREQ_LOW
+    freq_upper = FREQ_HIGH
+    num_freq = NUM_CHAN
     def __init__(self, uvdata, uvbeams, uv_res=0.5):
         self.uvdata = uvdata
         self.uvbeams = uvbeams
-        # convert to healpix.
-        for beam in self.uvbeams:
-            if isinstance(beam, UVBeam):
-                if beam.nside is None:
-                    beam.to_healpix()
         self.uv_res = uv_res
         self.min_lambda = C / uvdata.freq_array.max()
         # make sure that all beams are in healpix format
+        #self.freq_lower = uvdata.freq_array.min()/1e6
+        #self.freq_upper = uvdata.freq_array.max()/1e6
+        #self.num_freq = len(uvdata.freq_array)
 
     def beamx(self, feed, freq):
         """Beam for the X polarisation feed.
@@ -52,7 +58,7 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
         fnum = int(np.mod(feed, len(self.uvbeams)))
         return self.uvbeams[fnum].interp(self._angpos[:, 1],
                                          self._angpos[:, 0],
-                                         freq)[0][:, 0, 0, 0, :].squeeze().T
+                                         np.array([self.frequencies[freq]])*1e6)[0][:, 0, 0, 0, :].squeeze().T
 
     def beamy(self, feed, freq):
         """Beam for the Y polarisation feed.
@@ -73,7 +79,7 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
         fnum = int(np.mod(feed, len(self.uvbeams)))
         return self.uvbeams[fnum].interp(self._angpos[:, 1],
                                          self._angpos[:, 0],
-                                         freq)[0][:, 0, 1, 0, :].squeeze().T
+                                         np.array([self.frequencies[freq]])*1e6)[0][:, 0, 1, 0, :].squeeze().T
     # Set the feed array of feed positions (in metres EW, NS)
 
     @property
@@ -95,6 +101,9 @@ class UVPolarisedTelescope(SimplePolarisedTelescope):
 
 class BeamTransferer():
     def __init__(self, uvdata, uvbeams, directory='.', uv_res=0.5):
+        FREQ_LOW = uvdata.freq_array.min()/1e6 # telescope class expects frequencies in MHz.
+        FREQ_HIGH = uvdata.freq_array.max()/1e6 # telescope class expects frequencies in MHz.
+        NUM_CHAN = len(uvdata.freq_array)
         my_telescope = UVPolarisedTelescope(uvdata=uvdata, uvbeams=uvbeams, uv_res=uv_res)
         self.beam_transfer = BeamTransfer(directory=directory, telescope=my_telescope)
 

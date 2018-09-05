@@ -33,6 +33,7 @@ def test_write_transfer_matrices():
     uv_beams_airy = [AnalyticBeam('airy', diameter=6.), AnalyticBeam('airy', diameter=6.)]
     outdir = os.path.join(testdir, 'mmode_out_airy')
     uv_drift_airy = BeamTransferer(uvdata=uv_airy, uvbeams=uv_beams_airy, directory=outdir)
+    uv_drift_airy.write_transfer()
 
     uv_cst = UVData()
     uvb_cst = UVBeam()
@@ -41,3 +42,5 @@ def test_write_transfer_matrices():
     uv_beams_cst = [uvb_cst, uvb_cst]
     outdir = os.path.join(testdir, 'mmode_out_cst')
     uv_drift_cst = BeamTransferer(uvdata=uv_cst, uvbeams=uv_beams_cst, directory=outdir)
+    print(uv_drift_cst.beam_transfer.telescope.uvbeams[0].pixel_coordinate_system)
+    uv_drift_cst.write_transfer()
